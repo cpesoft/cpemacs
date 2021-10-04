@@ -1,0 +1,19 @@
+version: '2'
+services:
+  cpemacs:
+    build: 
+      context: .
+      # set ARGS
+      # partly defined via .env file in project root
+      args:
+        - HTTP_PROXY=${PROXY}
+        - HTTPS_PROXY=${PROXY}
+    image: cpesoft/cpemacs
+    container_name: cpemacs
+    hostname: cpemacs
+    restart: unless-stopped
+    environment:
+      - HTTP_PROXY=${PROXY}
+      - HTTPS_PROXY=${PROXY}
+    ports:
+      - "8080:8080"
