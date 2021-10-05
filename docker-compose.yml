@@ -1,4 +1,11 @@
-version: '2'
+version: '3'
+
+networks:
+  traefik_default:
+    driver: overlay
+    external:
+      name:  traefik_default
+
 services:
   cpemacs:
     build: 
@@ -15,5 +22,21 @@ services:
     environment:
       - HTTP_PROXY=${PROXY}
       - HTTPS_PROXY=${PROXY}
-    ports:
-      - "8080:8080"
+#    ports:
+#      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cpemacs.rule=Host(`cpemacs.localhost`)"
+      - "traefik.http.routers.cpemacs.service=cpemacs"
+      - "traefik.http.services.cpemacs.loadbalancer.server.port=8080"
+      - "traefik.docker.network=traefik_default"
+      # use basic auth
+      # see: https://doc.traefik.io/traefik/v2.0/middlewares/basicauth
+      - "traefik.http.routers.cpemacs.middlewares=test-auth"
+      # all dollar signs in the hash need to be doubled for escaping.
+      # To create user:password pair, it's possible to use this command:
+      # echo $(htpasswd -nb user password) | sed -e s/\\$/\\$\\$/g
+      - "traefik.http.middlewares.test-auth.basicauth.users=test:$$apr1$$H6uskkkW$$IgXLP6ewTrSuBkTrqE8wj/"
+
+    networks:
+      - traefik_default
