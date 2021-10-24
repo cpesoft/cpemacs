@@ -44,7 +44,8 @@ RUN \
   apt-utils \
   locales \
   locales-all \
-  tzdata
+  tzdata \
+  emacs-nox
   
 # Ensure UTF-8 and correct locale
 RUN \
