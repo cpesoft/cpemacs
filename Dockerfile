@@ -44,7 +44,11 @@ RUN \
   apt-utils \
   locales \
   locales-all \
-  tzdata
+  tzdata \
+  procps \
+  sudo \
+  emacs-nox \
+  ripgrep fd-find
   
 # Ensure UTF-8 and correct locale
 RUN \
@@ -54,11 +58,25 @@ ENV LANG       de_DE.UTF-8
 ENV LANGUAGE   de_DE.UTF-8
 ENV LC_ALL     de_DE.UTF-8
 
+# Set timezone in env
+ENV TZ Europe/Berlin
+
 # copy gotty from builder
 COPY --from=builder /tmp/gotty/bin/gotty /usr/local/bin/gotty
 
+# create and switch to user
+RUN \
+  useradd --create-home --groups sudo --shell /bin/bash cpe --uid 1000 
+
+# passwordless sudo (only temporary?)  
+RUN \
+ echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+USER cpe
+WORKDIR /home/cpe
+
 # set config
-COPY gotty.cfg /root/.gotty
+COPY gotty.cfg .gotty
 
 # set terminal emulation
 ENV TERM xterm-256colors
@@ -67,6 +85,15 @@ ENV TERM xterm-256colors
 # see: https://github.com/sorenisanerd/gotty/issues/15
 # see: https://github.com/xtermjs/xterm.js/issues/3357#issuecomment-852907822
 ENV GOTTY_ENABLE_WEBGL 0
+
+# install doom emacs
+RUN \
+  git clone --depth 1 https://github.com/hlissner/doom-emacs .emacs.d \
+  && mkdir -p ~/.doom.d \
+  && cp ~/.emacs.d/init.example.el ~/.doom.d/init.el \
+  && cp ~/.emacs.d/core/templates/config.example.el ~/.doom.d/config.el \
+  && cp ~/.emacs.d/core/templates/packages.example.el ~/.doom.d/packages.el \
+  && ~/.emacs.d/bin/doom sync
 
 # ###############################################################################
 # # RESET PROXY SETTINGS
