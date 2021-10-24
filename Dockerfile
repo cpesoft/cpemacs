@@ -1,3 +1,24 @@
+# start with build container
+FROM ubuntu:hirsute AS builder
+
+ENV http_proxy "$HTTP_PROXY"
+ENV https_proxy "$HTTPS_PROXY"
+
+# update and install base packages
+RUN \
+  apt-get update \
+  && apt-get upgrade -y -o Dpkg::Options::="--force-confold" \
+  && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  wget \
+  golang
+
+# install gotty via go get
+RUN \
+  mkdir -p /tmp/gotty && \
+  GOPATH=/tmp/gotty go get github.com/sorenisanerd/gotty
+
+# main container
 FROM ubuntu:hirsute
 
 LABEL version="0.1"
@@ -25,10 +46,6 @@ RUN \
   locales-all \
   tzdata
   
-
-#  && apk add wget go git build-base
-
-
 # Ensure UTF-8 and correct locale
 RUN \
   locale-gen de_DE.UTF-8 && \
@@ -37,22 +54,19 @@ ENV LANG       de_DE.UTF-8
 ENV LANGUAGE   de_DE.UTF-8
 ENV LC_ALL     de_DE.UTF-8
 
-# install gotty
-RUN \
-  cd /tmp \
-  && wget https://github.com/yudai/gotty/releases/download/v1.0.1/gotty_linux_amd64.tar.gz \
-  && tar xvzf gotty_linux_amd64.tar.gz \
-  && mv ./gotty /usr/local/bin
+# copy gotty from builder
+COPY --from=builder /tmp/gotty/bin/gotty /usr/local/bin/gotty
 
-#ENV TERM xterm-256colors
-ENV TERM screen
+# set config
+COPY gotty.cfg /root/.gotty
 
-# install gotty via go get
-# RUN \
-#   mkdir -p /tmp/gotty && \
-#   GOPATH=/tmp/gotty go get github.com/yudai/gotty && \
-#   mv /tmp/gotty/bin/gotty /usr/local/bin/ && \
-#   rm -rf /tmp/gotty
+# set terminal emulation
+ENV TERM xterm-256colors
+
+# disable WebGL due to bug in xterm.js
+# see: https://github.com/sorenisanerd/gotty/issues/15
+# see: https://github.com/xtermjs/xterm.js/issues/3357#issuecomment-852907822
+ENV GOTTY_ENABLE_WEBGL 0
 
 # ###############################################################################
 # # RESET PROXY SETTINGS
@@ -76,4 +90,3 @@ EXPOSE 8080
 # ###############################################################################
 # # END OF DOCKERFILE
 # ###############################################################################
-
