@@ -61,8 +61,19 @@ ENV TZ Europe/Berlin
 # copy gotty from builder
 COPY --from=builder /tmp/gotty/bin/gotty /usr/local/bin/gotty
 
+# create and switch to user
+RUN \
+  useradd --create-home --groups sudo --shell /bin/bash cpe --uid 1000 
+
+# passwordless sudo (only temporary?)  
+RUN \
+ echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+USER cpe
+WORKDIR /home/cpe
+
 # set config
-COPY gotty.cfg /root/.gotty
+COPY gotty.cfg .gotty
 
 # set terminal emulation
 ENV TERM xterm-256colors
