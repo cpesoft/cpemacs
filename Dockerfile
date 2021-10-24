@@ -63,6 +63,11 @@ COPY gotty.cfg /root/.gotty
 # set terminal emulation
 ENV TERM xterm-256colors
 
+# disable WebGL due to bug in xterm.js
+# see: https://github.com/sorenisanerd/gotty/issues/15
+# see: https://github.com/xtermjs/xterm.js/issues/3357#issuecomment-852907822
+ENV GOTTY_ENABLE_WEBGL 0
+
 # ###############################################################################
 # # RESET PROXY SETTINGS
 # ###############################################################################
