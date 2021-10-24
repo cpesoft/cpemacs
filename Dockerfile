@@ -54,6 +54,9 @@ ENV LANG       de_DE.UTF-8
 ENV LANGUAGE   de_DE.UTF-8
 ENV LC_ALL     de_DE.UTF-8
 
+# Set timezone in env
+ENV TZ Europe/Berlin
+
 # copy gotty from builder
 COPY --from=builder /tmp/gotty/bin/gotty /usr/local/bin/gotty
 
