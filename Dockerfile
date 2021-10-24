@@ -45,7 +45,10 @@ RUN \
   locales \
   locales-all \
   tzdata \
-  emacs-nox
+  procps \
+  sudo \
+  emacs-nox \
+  ripgrep fd-find
   
 # Ensure UTF-8 and correct locale
 RUN \
@@ -82,6 +85,15 @@ ENV TERM xterm-256colors
 # see: https://github.com/sorenisanerd/gotty/issues/15
 # see: https://github.com/xtermjs/xterm.js/issues/3357#issuecomment-852907822
 ENV GOTTY_ENABLE_WEBGL 0
+
+# install doom emacs
+RUN \
+  git clone --depth 1 https://github.com/hlissner/doom-emacs .emacs.d \
+  && mkdir -p ~/.doom.d \
+  && cp ~/.emacs.d/init.example.el ~/.doom.d/init.el \
+  && cp ~/.emacs.d/core/templates/config.example.el ~/.doom.d/config.el \
+  && cp ~/.emacs.d/core/templates/packages.example.el ~/.doom.d/packages.el \
+  && ~/.emacs.d/bin/doom sync
 
 # ###############################################################################
 # # RESET PROXY SETTINGS
